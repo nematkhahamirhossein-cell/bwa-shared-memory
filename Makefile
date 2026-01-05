@@ -7,7 +7,7 @@ WRAP_MALLOC=-DUSE_MALLOC_WRAPPERS
 AR=			ar
 DFLAGS=		-DHAVE_PTHREAD $(WRAP_MALLOC)
 LOBJS=		utils.o kthread.o kstring.o ksw.o bwt.o bntseq.o bwa.o bwamem.o bwamem_pair.o bwamem_extra.o malloc_wrap.o \
-			QSufSort.o bwt_gen.o rope.o rle.o is.o bwtindex.o streams.o CUDAKernel_memmgnt.o bwt_CUDA.o bntseq_CUDA.o kbtree_CUDA.o ksw_CUDA.o bwa_CUDA.o kstring_CUDA.o bwamem_GPU.o GPULink.o minibatch_process.o superbatch_process.o
+			QSufSort.o bwt_gen.o rope.o rle.o is.o bwtindex.o streams.o CUDAKernel_memmgnt.o cuda_profiler.o bwt_CUDA.o bntseq_CUDA.o kbtree_CUDA.o ksw_CUDA.o bwa_CUDA.o kstring_CUDA.o bwamem_GPU.o GPULink.o minibatch_process.o superbatch_process.o
 AOBJS=		bwashm.o bwase.o bwaseqio.o bwtgap.o bwtaln.o bamlite.o \
 			bwape.o kopen.o pemerge.o maxk.o \
 			bwtsw2_core.o bwtsw2_main.o bwtsw2_aux.o bwt_lite.o \
@@ -17,7 +17,7 @@ INCLUDES=
 LIBS=		-lm -lz -lpthread
 SUBDIRS=	.
 CUDADIR=    ./cuda
-CUDA_ARCH = sm_52
+CUDA_ARCH = sm_75
 NVCC_OPTIM_FLAGS= -Xptxas -O4 -Xcompiler -O4 --device-c -arch=$(CUDA_ARCH)
 NVCC_DEBUG_FLAGS= -g -G -O0 --device-c -arch=$(CUDA_ARCH)
 
@@ -56,6 +56,9 @@ depend:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 CUDAKernel_memmgnt.o: $(CUDADIR)/CUDAKernel_memmgnt.cu $(CUDADIR)/CUDAKernel_memmgnt.cuh
 	nvcc -I. $(NVCC_FLAGS) $(CUDADIR)/CUDAKernel_memmgnt.cu -o CUDAKernel_memmgnt.o
+
+cuda_profiler.o: $(CUDADIR)/cuda_profiler.cu $(CUDADIR)/cuda_profiler.cuh
+	nvcc -I. $(NVCC_FLAGS) $(CUDADIR)/cuda_profiler.cu -o cuda_profiler.o
 streams.o: $(CUDADIR)/streams.cu $(CUDADIR)/streams.cuh
 	nvcc -I. $(NVCC_FLAGS) $(CUDADIR)/streams.cu -o streams.o
 bwt_CUDA.o: $(CUDADIR)/bwt_CUDA.cu $(CUDADIR)/bwt_CUDA.cuh

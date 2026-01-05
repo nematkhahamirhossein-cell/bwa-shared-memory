@@ -2,6 +2,7 @@
 #include "preprocessing.cuh"
 #define HASH_LEN 7
 #include "errHandler.cuh"
+#include "cuda_profiler.cuh"
 
 __device__ __constant__ unsigned char d_nst_nt4_table[256] = {
 	4, 4, 4, 4,  4, 4, 4, 4,  4, 4, 4, 4,  4, 4, 4, 4, 
@@ -109,7 +110,9 @@ int* preprocessing1(bseq1_t* d_seqs, int n_seqs)
 	// launch kernel to hash and drop to bucket
 	dim3 dimGrid(ceil((double)n_seqs/32));
 	dim3 dimBlock(32);
-	hash_kernel <<< dimGrid, dimBlock, 0 >>> (d_seqs, n_seqs, d_bucket_N, d_bucket_ids, bucket_maxlen);
+cuda_profiler_record_start("hash_kernel", 0);
+hash_kernel <<< dimGrid, dimBlock, 0 >>> (d_seqs, n_seqs, d_bucket_N, d_bucket_ids, bucket_maxlen);
+cuda_profiler_record_end("hash_kernel", 0);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 
@@ -117,7 +120,9 @@ int* preprocessing1(bseq1_t* d_seqs, int n_seqs)
 	int* d_hash_map;
 	cudaMalloc((void**)&d_hash_map, n_seqs*sizeof(int));
 	// launch kernel to calculate map
-	hash_map_kernel <<< dimGrid, dimBlock, 0 >>> (d_bucket_N, d_bucket_ids, n_bucket, bucket_maxlen, d_hash_map, n_seqs);
+cuda_profiler_record_start("hash_map_kernel", 0);
+hash_map_kernel <<< dimGrid, dimBlock, 0 >>> (d_bucket_N, d_bucket_ids, n_bucket, bucket_maxlen, d_hash_map, n_seqs);
+cuda_profiler_record_end("hash_map_kernel", 0);
 	gpuErrchk( cudaPeekAtLastError() );
 	gpuErrchk( cudaDeviceSynchronize() );
 

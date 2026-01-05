@@ -2,6 +2,7 @@
 #define POOLSIZE 135000000	// size of each buffer pool
 #include "CUDAKernel_memmgnt.cuh"
 #include "errHandler.cuh"
+#include "cuda_profiler.cuh"
 
 typedef struct
 {
@@ -190,7 +191,9 @@ void printBufferInfoHost(void* d_buffer_pools){
 	float *h_usage, *d_usage;
 	h_usage = (float*)malloc(NBUFFERPOOLS*sizeof(float));
 	cudaMalloc((void**)&d_usage, NBUFFERPOOLS*sizeof(float));
-	printBufferInfoHost_kernel <<< 1, NBUFFERPOOLS >>> (d_buffer_pools, d_usage);
+cuda_profiler_record_start("printBufferInfoHost_kernel", 0);
+printBufferInfoHost_kernel <<< 1, NBUFFERPOOLS >>> (d_buffer_pools, d_usage);
+cuda_profiler_record_end("printBufferInfoHost_kernel", 0);
 	cudaMemcpy(h_usage, d_usage, NBUFFERPOOLS*sizeof(float), cudaMemcpyDeviceToHost);
 	for (int i=0; i<NBUFFERPOOLS; i++)
 		fprintf(stderr, "pool %2d: %.2f used\n", i, h_usage[i]);
